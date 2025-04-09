@@ -1,0 +1,53 @@
+# This is a basic workflow to help you get started with Actions 
+ name: EliteMobs Builder 
+ # Controls when the action will run. Triggers the workflow on push or pull request 
+ # events but only for the master branch 
+ on: 
+   workflow_dispatch: 
+     inputs: 
+       logLevel: 
+         description: 'Log level' 
+         required: true 
+         default: 'warning' 
+       tags: 
+         description: 'Test scenario tags' 
+   push: 
+     branches: [ "master" ] 
+   pull_request: 
+     branches: [ "master" ] 
+  
+ jobs: 
+   build:
+     permissions: write-all 
+     runs-on: ubuntu-latest 
+     steps: 
+     - uses: actions/checkout@v3 
+     - name: Set up JDK 17 
+       uses: actions/setup-java@v3 
+       with: 
+         java-version: '17' 
+         distribution: 'temurin' 
+         server-id: phoenixdevt-releases
+         
+     - name: Setup Gradle
+       uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+       with:
+         gradle-version: '8.9'
+    
+      
+     - name: Install depends 
+       run: gradle clean
+     - name: Build with Gradle 
+       run: gradle shadowJar
+       
+     - name: "Build & test" 
+       run: | 
+         echo "done!" 
+     - uses: "marvinpinto/action-automatic-releases@latest" 
+       with: 
+         repo_token: "${{ secrets.GITHUB_TOKEN }}" 
+         automatic_release_tag: "Compiled" 
+         prerelease: false 
+         title: "Release Compiled" 
+         files: | 
+           staging/*.jar
